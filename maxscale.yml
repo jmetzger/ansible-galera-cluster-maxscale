@@ -1,0 +1,43 @@
+---
+- name: install maxscale   
+  hosts: maxscale 
+
+  pre_tasks:
+
+    - name: run an apt update, once per hour 
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+  tasks: 
+
+    - name: download mariadb repo script 
+      uri: 
+        url: https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
+        dest: /usr/src 
+        mode: u+x 
+        creates: mariadb_repo_setup
+
+    - name: execute maxscale repo creation script
+      command:
+        cmd: bash /usr/src/mariadb_repo_setup 
+        creates: /etc/apt/sources.list.d/mariadb.list 
+
+    - name: install maxscale 
+      apt:
+        name: maxscale 
+        state: present 
+
+    - name: create config file 
+      template: 
+        src: maxscale.cnf.j2
+        dest: /etc/maxscale.cnf 
+
+    - name: restart maxscale 
+      service:
+        name: maxscale 
+        enabled: true 
+        state: restarted 
+
+   
+ 

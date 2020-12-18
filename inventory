@@ -1,0 +1,8 @@
+[galera_cluster]
+galera1 ansible_host=134.209.226.128
+galera2 ansible_host=167.99.135.51  
+galera3 ansible_host=104.248.20.51
+
+[maxscale]
+maxscale1 ansible_host=167.71.40.123
+

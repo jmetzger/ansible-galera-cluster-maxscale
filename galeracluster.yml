@@ -1,0 +1,58 @@
+---
+- name: install mariadb - server from mariadb  
+  hosts: galera_cluster 
+
+  pre_tasks:
+
+    - name: run an apt update, once per hour 
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+  tasks: 
+
+    - name: install needed software
+      apt:
+        name: software-properties-common
+        state: present 
+
+    - name: install necessary apt keys 
+      apt_key: 
+        url: https://mariadb.org/mariadb_release_signing_key.asc
+        state: present
+
+    - name: add mariadb repo 
+      apt_repository:
+        repo: deb [arch=amd64,arm64,ppc64el] https://mirror.dogado.de/mariadb/repo/10.4/ubuntu focal main
+        state: present
+        filename: mariadb
+        update_cache: true 
+
+    - name: install mariadb-server 
+      apt:
+        name: mariadb-server 
+        state: present
+
+    - name: Create List of nodes to be added into Cluster
+      set_fact: 
+         nodelist={%for host in groups['galera_cluster']%}{{hostvars[host].ansible_host}}{% if not loop.last %},{% endif %}{% endfor %}
+
+    - debug: 
+        msg=[{{nodelist}}]
+
+    - name: 
+      template: 
+        src: z_galera.cnf.j2  
+        dest: /etc/mysql/mariadb.conf.d/z_galera.cnf
+    
+    - name: Stop MariaDB on first MariaDB Galera cluster node
+      service: name=mariadb state=stopped
+      when: inventory_hostname == groups['galera_cluster'][0]
+
+    - name: Bootstrap first MariaDB Galera cluster node
+      command: galera_new_cluster
+      when: inventory_hostname == groups['galera_cluster'][0]
+
+    - name: Restart the other MariaDB Galera cluster nodes
+      service: name=mariadb state=restarted
+      when: inventory_hostname != groups['galera_cluster'][0]
