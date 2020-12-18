@@ -8,6 +8,9 @@ Install ansible on your local system
 inventory 
 
 # Step 2 - Connect to all nodes once as root with key and agree to host-key 
+ssh root@<ip1>
+eval $(ssh-agent)
+ssh-add 
 
 # Step 3 - Execute scripts 
 ansible-playbook galeracluster.yml 
