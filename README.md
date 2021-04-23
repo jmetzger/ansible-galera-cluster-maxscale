@@ -1,4 +1,4 @@
-# Ansible playbooks for galera cluster 
+# Ansible playbooks for galera cluster (Ubuntu 20.04) 
 
 ```
 # Step 0 
